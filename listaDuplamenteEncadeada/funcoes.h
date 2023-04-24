@@ -3,7 +3,8 @@
 
 typedef struct no{
     int info;
-    struct no* proximo; // na propria estrutura eu aponto para alguem do mesmo tipo dela
+    struct no* anterior; // acrescento apenas essa linha em relacao a lista encadeada simples
+    struct no* proximo;
 } Lista;
 
 /*

@@ -1,15 +1,8 @@
 //FUNCOES
 /* 
-    A LISTA ENCADEADA SIMPLES
-    Cresce a medida que insiro elementos, com alocação dinamica
-    A memoria eh o limite de armazanemaneto, continuo tendo limite, mas a memoria eh o limite
-    Na lista simples ela eh unidirecional
-    _____________________        _____________________   _____________________
-    |__dados___|__prox__|----->  |__dados___|__prox__|-->|__dados___|__prox__|
-
-    prox = ponteiro para o proximo
-    O marco inicial Da lita eh uma variavel estatico - vamos chama-la de L;
-    Nunca perder a marcação inicial 
+    A LISTA DUPLAMENTE ENCADEADA DINAMICA
+    __________________________        ___________________________   ___________________________
+    __amt_|__dados___|__prox__|----->__ant__|__dados___|__prox__|-->__ant_|__dados___|__prox__|
 
     OBSERVACAO: observe que sempre nas funcoes utilizo **ll
     Como na main, minha lista eh definida como Lista *lista, sempre entrara na funcao um endereco de memoria,
@@ -43,6 +36,7 @@ Lista* criarNo(int valor) {
         exit(1);
     }
     novo->info = valor;
+    novo->anterior = NULL;// acrescento apenas essa linha em relacao a lista encadeada simples
     novo->proximo = NULL;
     return novo;
 }
@@ -52,6 +46,7 @@ int listaVazia(Lista *ll){
 }
 
 int insereInicio(Lista **ll, int valor){
+    // nao muda nada desta funcao em relacao a lista encadeada simples
     Lista *nova = criarNo(valor);
 
     if (*ll == NULL) {
@@ -64,76 +59,91 @@ int insereInicio(Lista **ll, int valor){
     return 1;
 }
 
-int insereOrdenado(Lista** ll, int valor){
+int insereOrdenado(Lista** ll, int valor){  // modificado em relacao a lista encadeada simples
     Lista* novo = criarNo(valor);
+    Lista *aux;
 
-    // Caso a lista esteja vazia ou o valor seja menor que o valor do primeiro nó
-    if (*ll == NULL || valor < (*ll)->info) {
-        novo->proximo = *ll;
+    if(*ll == NULL){// Se vazia
+        novo->proximo = NULL;
+        novo->proximo = NULL;
         *ll = novo;
-    } else {
-        Lista* atual = *ll;
-        while (atual->proximo != NULL && atual->proximo->info < valor) {
-            atual = atual->proximo;
+    }else if(valor < (*ll)->info){// se o valor for menor
+        novo->proximo = *ll;
+        (*ll)->anterior = novo;
+        *ll = novo;
+    }else{
+        aux = *ll;
+        while(aux->proximo && valor>aux->proximo->info){
+            aux = aux->proximo;
         }
-        novo->proximo = atual->proximo;
-        atual->proximo = novo;
+        novo->proximo = aux->proximo;
+        if(aux->proximo){
+            aux->proximo->anterior = novo;
+        }
+        novo->anterior = aux;
+        aux->proximo = novo;
     }
+
      return 1;
 }
 
 int insereFim(Lista **ll, int valor){
-    Lista *novo, *aux;
+    Lista *novo, *atual;
     novo = criarNo(valor);
 
-    if(*ll == NULL){ // se ll eh NULL, nao tem valor, vamos criar o primeiro no
+    if(*ll == NULL){ 
         *ll = novo;
-    }else{// nao eh o primeiro no
-        aux = *ll;
-        while(aux->proximo !=NULL){//enquanto existir um proximo ponto
-            aux = aux->proximo; // caminha ate o final
+    }else{
+        atual = *ll;
+        while(atual->proximo !=NULL){
+            atual = atual->proximo; 
         }
-        aux->proximo = novo;// chegou ao final, cria um próximo no.
+        atual->proximo = novo;
+        novo->anterior = atual;// acrescento apenas essa linha em relacao a lista encadeada simples
     }
     system("pause");
     return 1;
 }
 
-// Função para trocar os valores de dois nós
-void trocar(Lista *a, Lista* b) {
-    int aux;
-    aux = a->info;
-    a->info = b->info;
-    b->info = aux;
-}
-
 //Ordenar Lista
-void Ordenar(Lista **ll){
+void Ordenar(Lista **ll){// mudou bastante
     int troca;
-    Lista *no_atual;
-    Lista *no_anterior = NULL;
+    Lista *atual;
+    Lista *anterior = NULL;
+    Lista *aux;
 
     // Verifica se a lista está vazia ou possui apenas um elemento
     if (*ll == NULL || (*ll)->proximo == NULL) {
+        printf("lista vazia ou apenas um elemento");
         return;
     }
    
     do {
         troca = 0;
-        no_atual = *ll;
+        atual = *ll;
 
-        // Percorre a lista encadeada comparando elementos adjacentes e trocando-os se estiverem fora de ordem
-        while (no_atual->proximo != no_anterior) {
-            if (no_atual->info > no_atual->proximo->info) {
-                trocar(no_atual, no_atual->proximo);
+        while(atual->proximo != NULL){
+            if(atual->info > atual->proximo->info){
+                aux = atual->proximo;
+                atual->proximo = aux->proximo;
+                aux->anterior = atual->anterior;
+                
+                if(atual->proximo != NULL){
+                    atual->proximo->anterior = atual;
+                }
+                if(atual->anterior != NULL){
+                    atual->anterior->proximo = aux;
+                }else{
+                    *ll = aux;
+                }
+                aux->proximo = atual;
+                atual->anterior = aux;
                 troca = 1;
+            }else{
+                atual = atual->proximo;
             }
-            no_atual = no_atual->proximo;
         }
-        no_anterior = no_atual;
-
     } while (troca);
-
 }
 
 void mostra(Lista *ll){
@@ -154,7 +164,7 @@ void mostra(Lista *ll){
 }
 
 
-void limparLista(Lista **ll){
+void limparLista(Lista **ll){// sem diferenca da lista encadeada simples
     Lista *aux; // cria uma copia para nao perder o endereço
     while(*ll){
         aux = *ll;
@@ -163,7 +173,6 @@ void limparLista(Lista **ll){
 
     }
     system("pause");
-
 }
 
 void removerInicio(Lista** ll) {
@@ -171,12 +180,13 @@ void removerInicio(Lista** ll) {
         printf("A lista está vazia.\n");
         return;
     }
-
     Lista* aux = *ll;
     *ll = (*ll)->proximo;
+    if (*ll != NULL) { // incluo esse if em relacao a lista encadeada simples
+        (*ll)->anterior = NULL;
+    }
     free(aux);
 }
-
 
 // Função para remover o último elemento da lista
 void removerFim(Lista** ll) {
@@ -184,22 +194,21 @@ void removerFim(Lista** ll) {
         printf("A lista está vazia.\n");
         return;
     }
-
-    if ((*ll)->proximo == NULL) {
-        // Caso a lista tenha apenas um nó
-        free(*ll);
+    // modifico bastante essa parte em relacao a lista simples
+    Lista* atual = *ll;
+    while (atual->proximo != NULL) {
+        atual = atual->proximo;
+    }
+    if (atual->anterior == NULL) {
+        // Único elemento na lista
         *ll = NULL;
     } else {
-        Lista* anterior = NULL;
-        Lista* atual = *ll;
-        while (atual->proximo != NULL) {
-            anterior = atual;
-            atual = atual->proximo;
-        }
-        anterior->proximo = NULL;
-        free(atual);
+        atual->anterior->proximo = NULL;
     }
+
+    free(atual);
 }
+
 
 // Função para remover um elemento específico da lista
 void removerElemento(Lista** ll, int valor) {
